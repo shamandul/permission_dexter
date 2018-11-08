@@ -19,6 +19,8 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         buttonCamera.setOnClickListener{checkCameraPermissions()}
+        buttonContacts.setOnClickListener{checkContactsPermissions()}
+        buttonAudio.setOnClickListener{checkAudioPermissions()}
 
     }
 
@@ -56,4 +58,73 @@ class MainActivity : Activity() {
             }).check()
 
     }
+    private fun checkContactsPermissions(){
+        val context = this
+        Dexter.withActivity(context)
+            .withPermission(Manifest.permission.READ_CONTACTS)
+            .withListener(object: PermissionListener{
+                override fun onPermissionGranted(response: PermissionGrantedResponse?) {
+                    textViewContact.text = getString(R.string.permission_status_granted)
+                    textViewContact.setTextColor(ContextCompat.getColor(context, R.color.colorPermissionStatusGranted))
+                }
+
+                override fun onPermissionDenied(response: PermissionDeniedResponse) {
+                    if (response.isPermanentlyDenied){
+                        textViewContact.text = getString(R.string.permission_status_denied_permanently)
+                        textViewContact.setTextColor(ContextCompat.getColor(context, R.color.colorPermissionStatusPermanentlyDenied))
+                    }else {
+                        textViewContact.text = getString(R.string.permission_status_denied)
+                        textViewContact.setTextColor(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.colorPermissionStatusDenied
+                            )
+                        )
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permission: PermissionRequest?,
+                    token: PermissionToken
+                ) {
+                    token.continuePermissionRequest()
+                }
+            }).check()
+
+    }
+    private fun checkAudioPermissions(){
+        val context = this
+        Dexter.withActivity(context)
+            .withPermission(Manifest.permission.RECORD_AUDIO)
+            .withListener(object: PermissionListener{
+                override fun onPermissionGranted(response: PermissionGrantedResponse?) {
+                    textViewAudio.text = getString(R.string.permission_status_granted)
+                    textViewAudio.setTextColor(ContextCompat.getColor(context, R.color.colorPermissionStatusGranted))
+                }
+
+                override fun onPermissionDenied(response: PermissionDeniedResponse) {
+                    if (response.isPermanentlyDenied){
+                        textViewAudio.text = getString(R.string.permission_status_denied_permanently)
+                        textViewAudio.setTextColor(ContextCompat.getColor(context, R.color.colorPermissionStatusPermanentlyDenied))
+                    }else {
+                        textViewAudio.text = getString(R.string.permission_status_denied)
+                        textViewAudio.setTextColor(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.colorPermissionStatusDenied
+                            )
+                        )
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permission: PermissionRequest?,
+                    token: PermissionToken
+                ) {
+                    token.continuePermissionRequest()
+                }
+            }).check()
+
+    }
+
 }
