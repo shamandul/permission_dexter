@@ -224,7 +224,7 @@ class MainActivity : Activity() {
 
         }
 
-        val composite = CompositePermissionListener(permission)
+        val composite = CompositePermissionListener(permission, snacbarPermissionsListener)
         Dexter.withActivity(this)
             .withPermission(Manifest.permission.CAMERA)
             .withListener(composite)
