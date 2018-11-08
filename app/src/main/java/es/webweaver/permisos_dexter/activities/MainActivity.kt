@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.widget.TextView
 import com.karumi.dexter.Dexter
+import com.karumi.dexter.DexterBuilder
+import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.karumi.dexter.listener.single.PermissionListener
 import es.webweaver.permisos_dexter.R
 import es.webweaver.permisos_dexter.enums.PermissionStatusEnum
@@ -29,11 +32,67 @@ class MainActivity : Activity() {
         buttonCamera.setOnClickListener { checkCameraPermissions() }
         buttonContacts.setOnClickListener { checkContactsPermissions() }
         buttonAudio.setOnClickListener { checkAudioPermissions() }
+        buttonAll.setOnClickListener { checkAllPermissions() }
     }
 
     private fun checkCameraPermissions() = setPermissionHandler(Manifest.permission.CAMERA, textViewCamera)
     private fun checkContactsPermissions() = setPermissionHandler(Manifest.permission.READ_CONTACTS, textViewContact)
     private fun checkAudioPermissions() = setPermissionHandler(Manifest.permission.RECORD_AUDIO, textViewAudio)
+
+    private fun checkAllPermissions(){
+        Dexter.withActivity(this)
+            .withPermissions(
+                Manifest.permission.CAMERA,
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.RECORD_AUDIO
+            )
+            .withListener(object: MultiplePermissionsListener{
+                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                    report?.let {
+                        for (permission in report.grantedPermissionResponses){
+                            when(permission.permissionName){
+                                Manifest.permission.CAMERA -> setPermissionStatus(textViewCamera, PermissionStatusEnum.GRANTED)
+                                Manifest.permission.READ_CONTACTS -> setPermissionStatus(textViewContact, PermissionStatusEnum.GRANTED)
+                                Manifest.permission.RECORD_AUDIO -> setPermissionStatus(textViewAudio, PermissionStatusEnum.GRANTED)
+                            }
+                        }
+                        for (permission in report.deniedPermissionResponses){
+                        when(permission.permissionName){
+                            Manifest.permission.CAMERA ->{
+                                if (permission.isPermanentlyDenied){
+                                    setPermissionStatus(textViewCamera, PermissionStatusEnum.PERMANENTLY_DENIED)
+                                }else{
+                                    setPermissionStatus(textViewCamera, PermissionStatusEnum.DENIED)
+                                }
+                            }
+                            Manifest.permission.READ_CONTACTS ->{
+                                if (permission.isPermanentlyDenied){
+                                    setPermissionStatus(textViewContact, PermissionStatusEnum.PERMANENTLY_DENIED)
+                                }else{
+                                    setPermissionStatus(textViewContact, PermissionStatusEnum.DENIED)
+                                }
+                            }
+                            Manifest.permission.RECORD_AUDIO ->{
+                                if (permission.isPermanentlyDenied){
+                                    setPermissionStatus(textViewAudio, PermissionStatusEnum.PERMANENTLY_DENIED)
+                                }else{
+                                    setPermissionStatus(textViewAudio, PermissionStatusEnum.DENIED)
+                                }
+                            }
+                        }
+                    }
+
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permissions: MutableList<PermissionRequest>?,
+                    token: PermissionToken?
+                ) {
+                    token?.continuePermissionRequest()                }
+
+            }).check()
+    }
 
     private fun setPermissionHandler(permission: String, textView: TextView){
 
